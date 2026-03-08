@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Analytics Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #a855f7;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f1f5f9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: #0f172a;
+            color: var(--text);
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-btn {
+            text-decoration: none;
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            transition: 0.3s;
+        }
+
+        .nav-btn:hover {
+            background: var(--primary);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(16px);
+            margin-bottom: 2rem;
+        }
+
+        .card h2 {
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            color: #818cf8;
+        }
+
+        .graph-container {
+            text-align: center;
+        }
+
+        .graph-container img {
+            max-width: 100%;
+            border-radius: 16px;
+        }
+
+        .metrics-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .metrics-table th {
+            text-align: left;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .metrics-table td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .score {
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        .blockchain-log {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .block {
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .block-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #6366f1;
+            margin-bottom: 1rem;
+        }
+
+        .block-data {
+            font-size: 0.9rem;
+        }
+
+        .block-hash {
+            font-family: monospace;
+            font-size: 0.7rem;
+            color: #475569;
+            overflow-wrap: break-word;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .status-tag {
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .status-positive {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        .status-negative {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Analytics Center</h1>
+            <a href="/" class="nav-btn">← Back to Portal</a>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="main-content">
+                <div class="card graph-container">
+                    <h2>Model Performance</h2>
+                    {% if graph_url %}
+                    <img src="data:image/png;base64,{{ graph_url }}" alt="Performance Chart">
+                    {% else %}
+                    <p>No model data available.</p>
+                    {% endif %}
+                </div>
+
+                <div class="card">
+                    <h2>Detailed Metrics</h2>
+                    <table class="metrics-table">
+                        <thead>
+                            <tr>
+                                <th>Disease</th>
+                                <th>Accuracy</th>
+                                <th>F1 Score</th>
+                                <th>Recall</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for name, m in metrics.items() %}
+                            <tr>
+                                <td>{{ name }}</td>
+                                <td class="score">{{ (m.Accuracy * 100)|round(2) }}%</td>
+                                <td>{{ (m.F1 * 100)|round(2) }}%</td>
+                                <td>{{ (m.Recall * 100)|round(2) }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="card">
+                    <h2>Blockchain Ledger</h2>
+                    <div class="blockchain-log">
+                        {% for block in chain|reverse %}
+                        {% if block.index > 0 %}
+                        <div class="block">
+                            <div class="block-header">
+                                <span>BLOCK #{{ block.index }}</span>
+                                <span>{{ block.data.disease }}</span>
+                            </div>
+                            <div class="block-data">
+                                <span
+                                    class="status-tag {{ 'status-positive' if block.data.prediction == 'Positive' else 'status-negative' }}">
+                                    {{ block.data.prediction }}
+                                </span>
+                                <span style="margin-left: 10px; opacity: 0.6;">Confidence: {{ (block.data.probability *
+                                    100)|round(1) }}%</span>
+                            </div>
+                            <div class="block-hash">
+                                PREV: {{ block.previous_hash[:32] }}...<br>
+                                HASH: {{ block.hash[:32] }}...
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                        {% if chain|length <= 1 %} <p style="text-align: center; color: #475569;">No transactions yet.
+                            </p>
+                            {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
